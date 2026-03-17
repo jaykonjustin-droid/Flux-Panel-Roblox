@@ -1,4 +1,4 @@
--- Flux Cheats v1.4 - Aimbot fuerte + ESP Names/Skeleton/Box/Health + Toggles en menú
+-- Flux Cheats v1.5 - Aimbot fuerte + ESP completo + Menú con INSERT + X para Mouse Lock
 -- Repo: https://github.com/jaykonjustin-droid/aimbot
 -- Loadstring: loadstring(game:HttpGet("https://raw.githubusercontent.com/jaykonjustin-droid/aimbot/main/flux_cheats.lua"))()
 
@@ -7,11 +7,13 @@ local RunService    = game:GetService("RunService")
 local UserInput     = game:GetService("UserInputService")
 local Camera        = workspace.CurrentCamera
 local LocalPlayer   = Players.LocalPlayer
+local Mouse         = LocalPlayer:GetMouse()
 
 -- Config
 local Settings = {
     AimbotEnabled = false,
     ESPEnabled    = false,
+    MouseLocked   = false,  -- por default libre
     FOV           = 220,
     Smoothness    = 0.75,
     AimPart       = "Head",
@@ -29,10 +31,9 @@ fovCircle.Radius       = Settings.FOV
 fovCircle.Filled       = false
 fovCircle.Visible      = false
 
--- ESP Tables (para limpiar después)
+-- ESP Tables
 local ESP_Objects = {}
 
--- Función para crear ESP para un jugador
 local function CreateESP(plr)
     if plr == LocalPlayer or ESP_Objects[plr] then return end
 
@@ -55,7 +56,7 @@ local function CreateESP(plr)
     HealthBar.Transparency = 0.7
 
     local SkeletonLines = {}
-    for i = 1, 10 do  -- líneas para skeleton (spine, arms, legs)
+    for i = 1, 10 do
         local line = Drawing.new("Line")
         line.Thickness = 1.5
         line.Color = Color3.fromRGB(0, 255, 255)
@@ -63,24 +64,15 @@ local function CreateESP(plr)
         table.insert(SkeletonLines, line)
     end
 
-    ESP_Objects[plr] = {
-        Box = Box,
-        Name = NameText,
-        Health = HealthBar,
-        Skeleton = SkeletonLines,
-    }
+    ESP_Objects[plr] = { Box = Box, Name = NameText, Health = HealthBar, Skeleton = SkeletonLines }
 end
 
--- Función para actualizar ESP
 local function UpdateESP()
     if not Settings.ESPEnabled then
         for _, obj in pairs(ESP_Objects) do
             for k, v in pairs(obj) do
-                if type(v) == "table" then
-                    for _, line in ipairs(v) do line.Visible = false end
-                else
-                    v.Visible = false
-                end
+                if type(v) == "table" then for _, l in ipairs(v) do l.Visible = false end
+                else v.Visible = false end
             end
         end
         return
@@ -116,7 +108,7 @@ local function UpdateESP()
             continue
         end
 
-        -- Box simple 2D
+        -- Box
         local top = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 2, 0))
         local bottom = Camera:WorldToViewportPoint(root.Position - Vector3.new(0, 3, 0))
         local size = Vector2.new(math.abs(top.X - bottom.X) * 2, math.abs(top.Y - bottom.Y) * 1.5)
@@ -127,7 +119,7 @@ local function UpdateESP()
         drawings.Box.Visible = true
 
         -- Name + HP + Dist
-        local dist = (LocalPlayer.Character.HumanoidRootPart.Position - root.Position).Magnitude
+        local dist = (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and (LocalPlayer.Character.HumanoidRootPart.Position - root.Position).Magnitude) or 0
         drawings.Name.Text = string.format("%s [%d HP] [%.0f studs]", plr.Name, math.floor(humanoid.Health), dist)
         drawings.Name.Position = Vector2.new(pos.X + size.X / 2, pos.Y - 20)
         drawings.Name.Visible = true
@@ -139,7 +131,7 @@ local function UpdateESP()
         drawings.Health.Color = Color3.fromRGB(255 * (1 - healthPct), 255 * healthPct, 0)
         drawings.Health.Visible = true
 
-        -- Skeleton básico (R6/R15 approx)
+        -- Skeleton
         local function WorldToScreen(pos)
             local v, vis = Camera:WorldToViewportPoint(pos)
             return Vector2.new(v.X, v.Y), vis
@@ -147,12 +139,11 @@ local function UpdateESP()
 
         local skel = drawings.Skeleton
         local parts = {
-            {head, root},  -- Head to Torso
+            {head, root},
             {root, plr.Character:FindFirstChild("Left Arm") or root},
             {root, plr.Character:FindFirstChild("Right Arm") or root},
             {root, plr.Character:FindFirstChild("Left Leg") or root},
             {root, plr.Character:FindFirstChild("Right Leg") or root},
-            -- más segmentos si quieres (upper/lower arms/legs)
         }
 
         for i, pair in ipairs(parts) do
@@ -171,7 +162,6 @@ local function UpdateESP()
     end
 end
 
--- Crear ESP para jugadores existentes y nuevos
 for _, plr in ipairs(Players:GetPlayers()) do CreateESP(plr) end
 Players.PlayerAdded:Connect(CreateESP)
 
@@ -182,8 +172,8 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size             = UDim2.new(0, 280, 0, 220)
-MainFrame.Position         = UDim2.new(0.5, -140, 0.5, -110)
+MainFrame.Size             = UDim2.new(0, 280, 0, 260)
+MainFrame.Position         = UDim2.new(0.5, -140, 0.5, -130)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainFrame.BorderSizePixel  = 0
 MainFrame.Visible          = false
@@ -193,7 +183,7 @@ Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 local Title = Instance.new("TextLabel")
 Title.Size                 = UDim2.new(1, 0, 0, 40)
 Title.BackgroundTransparency = 1
-Title.Text                 = "Flux Cheats v1.4"
+Title.Text                 = "Flux Cheats v1.5"
 Title.TextColor3           = Color3.fromRGB(0, 255, 130)
 Title.Font                 = Enum.Font.GothamBlack
 Title.TextSize             = 22
@@ -201,7 +191,7 @@ Title.Parent               = MainFrame
 
 local ToggleAimbot = Instance.new("TextButton")
 ToggleAimbot.Size             = UDim2.new(0.88, 0, 0, 40)
-ToggleAimbot.Position         = UDim2.new(0.06, 0, 0.22, 0)
+ToggleAimbot.Position         = UDim2.new(0.06, 0, 0.18, 0)
 ToggleAimbot.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 ToggleAimbot.Text             = "Aimbot: OFF"
 ToggleAimbot.TextColor3       = Color3.new(1,1,1)
@@ -219,7 +209,7 @@ end)
 
 local ToggleESP = Instance.new("TextButton")
 ToggleESP.Size             = UDim2.new(0.88, 0, 0, 40)
-ToggleESP.Position         = UDim2.new(0.06, 0, 0.42, 0)
+ToggleESP.Position         = UDim2.new(0.06, 0, 0.35, 0)
 ToggleESP.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 ToggleESP.Text             = "ESP: OFF"
 ToggleESP.TextColor3       = Color3.new(1,1,1)
@@ -234,17 +224,35 @@ ToggleESP.MouseButton1Click:Connect(function()
     ToggleESP.BackgroundColor3 = Settings.ESPEnabled and Color3.fromRGB(0, 190, 90) or Color3.fromRGB(40, 40, 40)
 end)
 
+local ToggleMouse = Instance.new("TextButton")
+ToggleMouse.Size             = UDim2.new(0.88, 0, 0, 40)
+ToggleMouse.Position         = UDim2.new(0.06, 0, 0.52, 0)
+ToggleMouse.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+ToggleMouse.Text             = "Mouse Lock: OFF"
+ToggleMouse.TextColor3       = Color3.new(1,1,1)
+ToggleMouse.Font             = Enum.Font.GothamBold
+ToggleMouse.TextSize         = 18
+ToggleMouse.Parent           = MainFrame
+Instance.new("UICorner", ToggleMouse).CornerRadius = UDim.new(0, 10)
+
+ToggleMouse.MouseButton1Click:Connect(function()
+    Settings.MouseLocked = not Settings.MouseLocked
+    ToggleMouse.Text = "Mouse Lock: " .. (Settings.MouseLocked and "ON" or "OFF")
+    ToggleMouse.BackgroundColor3 = Settings.MouseLocked and Color3.fromRGB(0, 190, 90) or Color3.fromRGB(40, 40, 40)
+    UserInput.MouseBehavior = Settings.MouseLocked and Enum.MouseBehavior.LockCenter or Enum.MouseBehavior.Default
+end)
+
 local InfoLabel = Instance.new("TextLabel")
 InfoLabel.Size                 = UDim2.new(0.88, 0, 0, 30)
-InfoLabel.Position             = UDim2.new(0.06, 0, 0.65, 0)
+InfoLabel.Position             = UDim2.new(0.06, 0, 0.70, 0)
 InfoLabel.BackgroundTransparency = 1
-InfoLabel.Text                 = "FOV: 220 | Smooth: 75% | Prediction ON | TeamCheck"
+InfoLabel.Text                 = "INSERT = menú | X = mouse lock | Y = toggle aimbot"
 InfoLabel.TextColor3           = Color3.fromRGB(170, 170, 170)
 InfoLabel.Font                 = Enum.Font.Gotham
 InfoLabel.TextSize             = 14
 InfoLabel.Parent               = MainFrame
 
--- Float Btn "F"
+-- Float Btn "F" (backup)
 local FloatBtn = Instance.new("TextButton")
 FloatBtn.Size             = UDim2.new(0, 55, 0, 55)
 FloatBtn.Position         = UDim2.new(1, -75, 1, -85)
@@ -264,7 +272,7 @@ FloatBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
--- Drag
+-- Drag menú
 local dragging, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -287,11 +295,19 @@ end)
 -- Teclas rápidas
 UserInput.InputBegan:Connect(function(input, gp)
     if gp then return end
-    if input.KeyCode == Enum.KeyCode.X then
-        local show = not (MainFrame.Visible or FloatBtn.Visible)
-        MainFrame.Visible = show
-        FloatBtn.Visible  = show
+
+    if input.KeyCode == Enum.KeyCode.Insert then
+        MainFrame.Visible = not MainFrame.Visible
+        FloatBtn.Visible = MainFrame.Visible  -- opcional: ocultar botón cuando menú está abierto
     end
+
+    if input.KeyCode == Enum.KeyCode.X then
+        Settings.MouseLocked = not Settings.MouseLocked
+        ToggleMouse.Text = "Mouse Lock: " .. (Settings.MouseLocked and "ON" or "OFF")
+        ToggleMouse.BackgroundColor3 = Settings.MouseLocked and Color3.fromRGB(0, 190, 90) or Color3.fromRGB(40, 40, 40)
+        UserInput.MouseBehavior = Settings.MouseLocked and Enum.MouseBehavior.LockCenter or Enum.MouseBehavior.Default
+    end
+
     if input.KeyCode == Enum.KeyCode.Y then
         Settings.AimbotEnabled = not Settings.AimbotEnabled
         ToggleAimbot.Text = "Aimbot: " .. (Settings.AimbotEnabled and "ON" or "OFF")
@@ -300,7 +316,7 @@ UserInput.InputBegan:Connect(function(input, gp)
     end
 end)
 
--- Aimbot (mismo fuerte)
+-- Aimbot loop
 RunService.RenderStepped:Connect(function(delta)
     local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     fovCircle.Position = center
@@ -337,7 +353,7 @@ RunService.RenderStepped:Connect(function(delta)
     end
 end)
 
--- Loop para ESP
+-- ESP loop
 RunService.RenderStepped:Connect(UpdateESP)
 
-print("Flux Cheats v1.4 cargado! 🔥 Aimbot + ESP Names/Skeleton/Box/Health | X = ocultar todo | Y = toggle aimbot | Toca 'F' para menú")
+print("Flux Cheats v1.5 cargado! 🔥 INSERT = abrir/cerrar menú | X = mouse lock/unlock | Y = toggle aimbot | Toca 'F' para menú")
