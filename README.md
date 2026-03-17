@@ -1,19 +1,14 @@
-# Flux Cheats - Roblox Aimbot
+# Flux Cheats Roblox v1.6
 
-Aimbot suave al **60%** con **FOV 150** + círculo rojo visible + menú GUI arrastrable llamado **Flux Cheats**.
+Aimbot fuerte (75% smooth + prediction) + ESP completo (names, skeleton, box, health) + Menú editable.
 
-### Características
-- Aimbot con smoothness ajustable (actual 0.6 = 60%)
-- FOV básico con círculo rojo
-- Menú simple con toggle ON/OFF
-- Arrastrable
-- Compatible con la mayoría de executors (Fluxus, Solara, Delta, etc.)
+**Características**
+- Aimbot con FOV/Smooth ajustables
+- ESP through walls (toggleable)
+- Menú con sliders (FOV, Smooth, etc.)
+- Teclas: INSERT (menú), X (mouse lock), Y (aimbot toggle)
+- Botón flotante con logo Flux
 
-### Cómo ejecutar
-1. Copia el contenido de `flux_cheats.lua`
-2. Pégalo en tu executor y ejecuta
-3. Aparece el menú → activa el aimbot
-
-**Loadstring (si quieres usarlo directo):**
+**Loadstring**
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/TU_USUARIO/Flux-Cheats-Roblox/main/flux_cheats.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/jaykonjustin-droid/aimbot/main/flux_cheats.lua"))()
