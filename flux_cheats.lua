@@ -698,4 +698,4 @@ RunService.RenderStepped:Connect(function()
     SilentAim()
 end)
 
-print("Flux Cheats v1.7 FINAL cargado! Todo completo y funcional 🔥 Menú abre con INSERT")
+print("Flux Cheats v1.7 FINAL cargado! Todo completo y funcional 🔥 Menú abre con INSERT")  metele  Explica seguridad anti-robo    Explica seguridad anti-robo
