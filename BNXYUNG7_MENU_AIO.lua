@@ -1,7 +1,7 @@
 --[[
-    BNXYUNG7 MENU - ULTIMATE ALL-IN-ONE
-    VERSION: 1.0.0
-    ESTADO: SOLO UI (VACÍO)
+    BNXYUNG7 MENU - ULTIMATE ALL-IN-ONE (FIXED & OPTIMIZED)
+    VERSION: 1.1.0
+    ESTADO: ESTABLE
     CONTROLES: RightShift para Toggle
 ]]
 
@@ -18,7 +18,7 @@ local TOGGLE_KEY = Enum.KeyCode.RightShift
 local player = Players.LocalPlayer
 
 -- =============================================================================
--- 2. TABLA MAESTRA DEL PROYECTO (Simula módulos en un solo archivo)
+-- 2. TABLA MAESTRA DEL PROYECTO
 -- =============================================================================
 local BNXYUNG7 = {
     UI = {
@@ -26,7 +26,7 @@ local BNXYUNG7 = {
         Minimized = false,
         CurrentPage = nil,
         Pages = {},
-        Instances = {}, -- Almacena referencias a objetos UI
+        Instances = {},
         Theme = {
             Main = Color3.fromRGB(12, 12, 12),
             Sidebar = Color3.fromRGB(18, 18, 18),
@@ -45,13 +45,14 @@ local BNXYUNG7 = {
 -- 3. UTILIDADES INTERNAS
 -- =============================================================================
 function BNXYUNG7.Utils:Tween(obj, info, goal)
+    if not obj then return end
     local tween = TweenService:Create(obj, TweenInfo.new(unpack(info)), goal)
     tween:Play()
     return tween
 end
 
 function BNXYUNG7.Utils:Copy(text)
-    local success, _ = pcall(function()
+    local success = pcall(function()
         if setclipboard then
             setclipboard(text)
         elseif toclipboard then
@@ -65,16 +66,23 @@ end
 -- 4. LÓGICA DE LA INTERFAZ (UI)
 -- =============================================================================
 function BNXYUNG7.UI:Init()
-    -- Anti-Duplicación
+    -- Anti-Duplicación Robusta
     local success, target = pcall(function() return CoreGui end)
     local parent = (success and target) or player:WaitForChild("PlayerGui")
     
-    if parent:FindFirstChild(UI_NAME) then
-        parent[UI_NAME]:Destroy()
+    local existing = parent:FindFirstChild(UI_NAME)
+    if existing then
+        existing:Destroy()
     end
 
-    self:CreateInterface(parent)
-    self:SetupControls()
+    local createSuccess, err = pcall(function()
+        self:CreateInterface(parent)
+        self:SetupControls()
+    end)
+
+    if not createSuccess then
+        warn("[UI Error] Fallo al crear interfaz: " .. tostring(err))
+    end
 end
 
 function BNXYUNG7.UI:CreateInterface(parent)
@@ -99,13 +107,15 @@ function BNXYUNG7.UI:CreateInterface(parent)
     MainFrame.Parent = ScreenGui
     self.Instances.Main = MainFrame
 
-    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+    local MainCorner = Instance.new("UICorner", MainFrame)
+    MainCorner.CornerRadius = UDim.new(0, 10)
+    
     local Stroke = Instance.new("UIStroke", MainFrame)
     Stroke.Color = T.Accent
     Stroke.Thickness = 1.2
     Stroke.Transparency = 0.4
 
-    -- TOP BAR (Arrastre y Botones)
+    -- TOP BAR
     local TopBar = Instance.new("Frame")
     TopBar.Name = "TopBar"
     TopBar.Size = UDim2.new(1, 0, 0, 35)
@@ -129,13 +139,14 @@ function BNXYUNG7.UI:CreateInterface(parent)
         B.Font = Enum.Font.GothamBold
         B.TextSize = 14
         B.Parent = WindowBtns
+        
         B.MouseEnter:Connect(function() B.TextColor3 = color end)
         B.MouseLeave:Connect(function() B.TextColor3 = T.TextDim end)
         B.MouseButton1Click:Connect(callback)
     end
 
     CreateWinBtn("X", "X", T.Red, function() ScreenGui:Destroy() end)
-    CreateWinBtn("M", "☐", T.Green, function() print("Max") end)
+    CreateWinBtn("M", "☐", T.Green, function() print("Maximized (Not Implemented)") end)
     CreateWinBtn("I", "_", T.Accent, function() 
         self.Minimized = not self.Minimized
         BNXYUNG7.Utils:Tween(MainFrame, {0.4, Enum.EasingStyle.Quart}, {Size = self.Minimized and UDim2.new(0, 600, 0, 35) or UDim2.new(0, 600, 0, 400)})
@@ -150,7 +161,8 @@ function BNXYUNG7.UI:CreateInterface(parent)
     Sidebar.BorderSizePixel = 0
     Sidebar.Parent = MainFrame
 
-    Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
+    local SidebarCorner = Instance.new("UICorner", Sidebar)
+    SidebarCorner.CornerRadius = UDim.new(0, 10)
 
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(1, 0, 0, 50)
@@ -167,8 +179,9 @@ function BNXYUNG7.UI:CreateInterface(parent)
     Nav.BackgroundTransparency = 1
     Nav.Parent = Sidebar
 
-    Instance.new("UIListLayout", Nav).HorizontalAlignment = Enum.HorizontalAlignment.Center
-    Nav.UIListLayout.Padding = UDim.new(0, 5)
+    local NavLayout = Instance.new("UIListLayout", Nav)
+    NavLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    NavLayout.Padding = UDim.new(0, 5)
 
     -- ÁREA DE CONTENIDO
     local Content = Instance.new("Frame")
@@ -212,7 +225,8 @@ function BNXYUNG7.UI:CreateInterface(parent)
         B.AutoButtonColor = false
         B.Parent = Nav
 
-        Instance.new("UICorner", B).CornerRadius = UDim.new(0, 6)
+        local BCorn = Instance.new("UICorner", B)
+        BCorn.CornerRadius = UDim.new(0, 6)
 
         B.MouseEnter:Connect(function() BNXYUNG7.Utils:Tween(B, {0.2}, {BackgroundColor3 = T.Hover, TextColor3 = T.Text}) end)
         B.MouseLeave:Connect(function() BNXYUNG7.Utils:Tween(B, {0.2}, {BackgroundColor3 = T.Sidebar, TextColor3 = T.TextDim}) end)
@@ -224,7 +238,7 @@ function BNXYUNG7.UI:CreateInterface(parent)
 
     local tabs = {"Home", "Visual", "Aimbot", "Misc", "Settings"}
     for _, t in ipairs(tabs) do AddPage(t) end
-    self.Pages.Home.Visible = true
+    if self.Pages.Home then self.Pages.Home.Visible = true end
 
     -- BOTÓN COPIAR
     local CopyBtn = Instance.new("TextButton")
@@ -236,7 +250,9 @@ function BNXYUNG7.UI:CreateInterface(parent)
     CopyBtn.Font = Enum.Font.GothamBold
     CopyBtn.TextSize = 14
     CopyBtn.Parent = Sidebar
-    Instance.new("UICorner", CopyBtn).CornerRadius = UDim.new(0, 6)
+    
+    local CopyCorn = Instance.new("UICorner", CopyBtn)
+    CopyCorn.CornerRadius = UDim.new(0, 6)
 
     CopyBtn.MouseEnter:Connect(function() BNXYUNG7.Utils:Tween(CopyBtn, {0.2}, {BackgroundColor3 = T.Text}) end)
     CopyBtn.MouseLeave:Connect(function() BNXYUNG7.Utils:Tween(CopyBtn, {0.2}, {BackgroundColor3 = T.Accent}) end)
@@ -244,16 +260,25 @@ function BNXYUNG7.UI:CreateInterface(parent)
         local ok = BNXYUNG7.Utils:Copy("BNXYUNG7 MENU LOADED")
         CopyBtn.Text = ok and "¡Copiado!" or "Error"
         BNXYUNG7.Utils:Tween(CopyBtn, {0.2}, {BackgroundColor3 = T.Green})
-        task.wait(1)
-        CopyBtn.Text = "Copiar"
-        BNXYUNG7.Utils:Tween(CopyBtn, {0.2}, {BackgroundColor3 = T.Accent})
+        task.delay(1, function()
+            CopyBtn.Text = "Copiar"
+            BNXYUNG7.Utils:Tween(CopyBtn, {0.2}, {BackgroundColor3 = T.Accent})
+        end)
     end)
 
-    -- ARRASTRE
+    -- ARRASTRE (FIXED)
     local dStart, sPos, dragging
     TopBar.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-            dragging = true dStart = i.Position sPos = MainFrame.Position
+            dragging = true
+            dStart = i.Position
+            sPos = MainFrame.Position
+            
+            i.Changed:Connect(function()
+                if i.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
         end
     end)
     UserInputService.InputChanged:Connect(function(i)
@@ -261,9 +286,6 @@ function BNXYUNG7.UI:CreateInterface(parent)
             local delta = i.Position - dStart
             MainFrame.Position = UDim2.new(sPos.X.Scale, sPos.X.Offset + delta.X, sPos.Y.Scale, sPos.Y.Offset + delta.Y)
         end
-    end)
-    UserInputService.InputEnded:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = false end
     end)
 
     -- ANIMACIÓN APERTURA
@@ -274,8 +296,10 @@ end
 function BNXYUNG7.UI:SetupControls()
     UserInputService.InputBegan:Connect(function(input, gpe)
         if not gpe and input.KeyCode == TOGGLE_KEY then
-            self.Visible = not self.Visible
-            self.Instances.Main.Visible = self.Visible
+            if self.Instances.Main then
+                self.Visible = not self.Visible
+                self.Instances.Main.Visible = self.Visible
+            end
         end
     end)
 end
@@ -286,6 +310,7 @@ end
 local function Init()
     print("--------------------------------")
     print("   BNXYUNG7 PROJECT ALL-IN-ONE  ")
+    print("   Status: Fixed & Optimized    ")
     print("--------------------------------")
     local success, err = pcall(function()
         BNXYUNG7.UI:Init()
@@ -294,7 +319,7 @@ local function Init()
     if success then
         print("[System] Menú cargado con éxito.")
     else
-        warn("[Error] Fallo al inicializar: " .. tostring(err))
+        warn("[Critical Error] Fallo al inicializar: " .. tostring(err))
     end
 end
 
