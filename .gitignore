@@ -1,0 +1,13 @@
+# Roblox / Rojo / VS Code files
+.rojo/
+*.project.json
+.vscode/
+*.spec.lua
+*.rbxl
+*.rbxlx
+
+# System files
+.DS_Store
+Thumbs.db
+node_modules/
+.env
